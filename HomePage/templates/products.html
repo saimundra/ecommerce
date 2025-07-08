@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Products</title>
+    <style>
+        body {
+            background: #f4f6f8;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background: #8458B3;
+            color: #fff;
+            padding: 24px 0 16px 0;
+            text-align: center;
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 32px;
+        }
+        .cart-bar {
+            position: fixed;
+            top: 24px;
+            right: 32px;
+            z-index: 1100;
+            display: flex;
+            align-items: center;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+            border-radius: 24px;
+            padding: 8px 16px;
+        }
+        .cart-logo {
+            font-size: 1.6rem;
+            margin-right: 4px;
+        }
+        .cart-count {
+            background: #8458B3;
+            color: #fff;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin-left: 8px;
+        }
+        .cart-btn {
+            background: #fff;
+            color: #8458B3;
+            border: 1.5px solid #8458B3;
+            border-radius: 6px;
+            padding: 8px 18px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 12px;
+            transition: background 0.18s, color 0.18s;
+        }
+        .cart-btn:hover {
+            background: #8458B3;
+            color: #fff;
+        }
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 28px;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px 40px 20px;
+        }
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.18s, box-shadow 0.18s;
+        }
+        .card:hover {
+            transform: translateY(-6px) scale(1.03);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.13);
+        }
+        .card-body {
+            padding: 18px 16px 16px 16px;
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #222;
+        }
+        .card-desc {
+            font-size: 0.98rem;
+            color: #555;
+            margin-bottom: 14px;
+            flex: 1 1 auto;
+        }
+        .card-price {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #8458B3;
+            margin-bottom: 10px;
+        }
+        .card-btn {
+            background: #8458B3;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 0;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.18s;
+        }
+        .card-btn:hover {
+            background: #a28089;
+        }
+        /* Cart Modal */
+        .cart-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 340px;
+            height: 100vh;
+            background: #fff;
+            box-shadow: -2px 0 16px rgba(0,0,0,0.13);
+            z-index: 1000;
+            padding: 32px 24px 24px 24px;
+            overflow-y: auto;
+        }
+        .cart-modal.active {
+            display: block;
+        }
+        .cart-modal-header {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #8458B3;
+            margin-bottom: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .close-cart {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #8458B3;
+            cursor: pointer;
+        }
+        .cart-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 24px 0;
+        }
+        .cart-item {
+            border-bottom: 1px solid #eee;
+            padding: 12px 0;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+        .item-name {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #222;
+        }
+        .item-desc {
+            color: #555;
+            font-size: 0.95rem;
+            margin: 2px 0 6px 0;
+        }
+        .item-price {
+            color: #8458B3;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .remove-btn {
+            position: absolute;
+            top: 8px;
+            right: 0;
+            background: #fff;
+            color: #8458B3;
+            border: 1px solid #8458B3;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 2px 10px;
+            cursor: pointer;
+            transition: background 0.18s, color 0.18s;
+        }
+        .remove-btn:hover {
+            background: #8458B3;
+            color: #fff;
+        }
+        .total {
+            text-align: right;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #8458B3;
+            margin-top: 18px;
+        }
+        @media (max-width: 600px) {
+            .header {
+                font-size: 1.3rem;
+                padding: 16px 0 10px 0;
+            }
+            .products {
+                gap: 16px;
+            }
+            .cart-bar {
+                top: 8px;
+                right: 8px;
+                padding: 6px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">EAZee SHOP</div>
+    <div class="cart-bar">
+        <span class="cart-logo">🛒</span>
+        <span class="cart-count" id="cartCount">0</span>
+        <button class="cart-btn" onclick="toggleCart()">View Cart</button>
+    </div>
+    <div class="products">
+        {% for p in products %}
+        <div class="card" data-product-id="{{ p.id }}" data-product-name="{{ p.name|escapejs }}" data-product-desc="{{ p.description|escapejs }}" data-product-price="{{ p.price }}">
+            <div class="card-body">
+                <div class="card-title">{{ p.name }}</div>
+                <div class="card-desc">{{ p.description }}</div>
+                <div class="card-price">${{ p.price }}</div>
+                <button class="card-btn" onclick="addToCart('{{ p.id }}', '{{ p.name|escapejs }}', '{{ p.description|escapejs }}', '{{ p.price|floatformat:2 }}')">Add to Cart</button>
+            </div>
+        </div>
+        {% empty %}
+        <div style="grid-column: 1/-1; text-align:center; color:#888; font-size:1.2rem;">No products available.</div>
+        {% endfor %}
+    </div>
+    <div class="cart-modal" id="cartModal">
+        <div class="cart-modal-header">
+            Your Cart
+            <button class="close-cart" onclick="toggleCart()">&times;</button>
+        </div>
+        <ul class="cart-list" id="cartList"></ul>
+        <div class="total" id="cartTotal"></div>
+    </div>
+    <button id="manageProductsBtn" style="position:fixed; bottom:100px; right:32px; background:#007bff; color:#fff; border:none; border-radius:50%; width:56px; height:56px; font-size:1.5rem; box-shadow:0 4px 16px rgba(0,0,0,0.13); cursor:pointer; z-index:1200;">&#9881;</button>
+    <div class="crud-modal" id="manageModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.18); z-index:2100; align-items:center; justify-content:center;">
+        <div style="background:#fff; border-radius:12px; max-width:400px; width:95%; margin:auto; box-shadow:0 8px 32px rgba(0,0,0,0.18); padding:32px 24px 24px 24px; position:relative;">
+            <button onclick="closeManageModal()" style="position:absolute; top:12px; right:16px; background:none; border:none; font-size:1.5rem; color:#8458B3; cursor:pointer;">&times;</button>
+            <h2 style="margin-bottom:18px; color:#8458B3; text-align:center;">Manage Products</h2>
+            <form id="manageForm">
+                <label for="manageSelect">Select Product</label>
+                <select id="manageSelect" style="width:100%; margin-bottom:14px;">
+                    <option value="" disabled selected>Select a product</option>
+                    {% for p in products %}
+                    <option value="{{ p.id }}" data-name="{{ p.name|escapejs }}" data-desc="{{ p.description|escapejs }}" data-price="{{ p.price }}">{{ p.name }}</option>
+                    {% endfor %}
+                </select>
+                <label for="manageName">Product Name</label>
+                <input type="text" id="manageName" required style="width:100%; margin-bottom:12px;">
+                <label for="manageDesc">Description</label>
+                <textarea id="manageDesc" rows="3" required style="width:100%; margin-bottom:12px;"></textarea>
+                <label for="managePrice">Price ($)</label>
+                <input type="number" id="managePrice" step="0.01" min="0" required style="width:100%; margin-bottom:18px;">
+                <div id="manageError" style="color:#c00; margin-bottom:10px; display:none;"></div>
+                <button type="submit" id="manageUpdateBtn" style="width:100%; padding:10px; background:#8458B3; color:#fff; border:none; border-radius:6px; font-size:1.1rem; font-weight:600; cursor:pointer;">Update</button>
+                <button type="button" id="manageDeleteBtn" style="width:100%; padding:10px; background:#c00; color:#fff; border:none; border-radius:6px; font-size:1.1rem; font-weight:600; cursor:pointer; margin-top:10px;">Delete</button>
+            </form>
+        </div>
+    </div>
+    <!-- Product CRUD Modal -->
+    <div class="crud-modal" id="crudModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.18); z-index:2000; align-items:center; justify-content:center;">
+        <div style="background:#fff; border-radius:12px; max-width:400px; width:95%; margin:auto; box-shadow:0 8px 32px rgba(0,0,0,0.18); padding:32px 24px 24px 24px; position:relative;">
+            <button onclick="closeCrudModal()" style="position:absolute; top:12px; right:16px; background:none; border:none; font-size:1.5rem; color:#8458B3; cursor:pointer;">&times;</button>
+            <h2 id="crudModalTitle" style="margin-bottom:18px; color:#8458B3; text-align:center;">Add Product</h2>
+            <form id="crudForm">
+                <input type="hidden" id="crudProductId">
+                <input type="hidden" id="csrfTokenInput" value="{{ csrf_token }}">
+                <label for="crudName">Product Name</label>
+                <input type="text" id="crudName" name="name" required style="width:100%; margin-bottom:12px;">
+                <label for="crudDesc">Description</label>
+                <textarea id="crudDesc" name="description" rows="3" required style="width:100%; margin-bottom:12px;"></textarea>
+                <label for="crudPrice">Price ($)</label>
+                <input type="number" id="crudPrice" name="price" step="0.01" min="0" required style="width:100%; margin-bottom:18px;">
+                <div id="crudError" style="color:#c00; margin-bottom:10px; display:none;"></div>
+                <button type="submit" id="crudSubmitBtn" style="width:100%; padding:10px; background:#8458B3; color:#fff; border:none; border-radius:6px; font-size:1.1rem; font-weight:600; cursor:pointer;">Save</button>
+                <button type="button" id="crudDeleteBtn" style="width:100%; padding:10px; background:#c00; color:#fff; border:none; border-radius:6px; font-size:1.1rem; font-weight:600; cursor:pointer; margin-top:10px; display:none;">Delete</button>
+            </form>
+        </div>
+    </div>
+    <button id="addProductBtn" style="position:fixed; bottom:32px; right:32px; background:#8458B3; color:#fff; border:none; border-radius:50%; width:56px; height:56px; font-size:2rem; box-shadow:0 4px 16px rgba(0,0,0,0.13); cursor:pointer; z-index:1200;">+</button>
+    <script>
+        function getCart() {
+            return JSON.parse(localStorage.getItem('cart') || '[]');
+        }
+        function setCart(cart) {
+            localStorage.setItem('cart', JSON.stringify(cart));
+        }
+        function updateCartCount() {
+            const cart = getCart();
+            document.getElementById('cartCount').textContent = cart.length;
+        }
+        function addToCart(id, name, desc, price) {
+            const cart = getCart();
+            cart.push({id: id, name: name, desc: desc, price: price});
+            setCart(cart);
+            updateCartCount();
+        }
+        function removeFromCart(index) {
+            const cart = getCart();
+            cart.splice(index, 1);
+            setCart(cart);
+            renderCart();
+            updateCartCount();
+        }
+        function toggleCart() {
+            const modal = document.getElementById('cartModal');
+            if (modal.classList.contains('active')) {
+                modal.classList.remove('active');
+            } else {
+                renderCart();
+                modal.classList.add('active');
+            }
+        }
+        function renderCart() {
+            const cart = getCart();
+            const cartList = document.getElementById('cartList');
+            const cartTotal = document.getElementById('cartTotal');
+            cartList.innerHTML = '';
+            let total = 0;
+            if (cart.length === 0) {
+                cartList.innerHTML = '<li style="color:#888; text-align:center;">Your cart is empty.</li>';
+                cartTotal.textContent = '';
+                return;
+            }
+            cart.forEach(function(item, idx) {
+                total += parseFloat(item.price);
+                var li = document.createElement('li');
+                li.className = 'cart-item';
+                li.innerHTML = '<span class="item-name">' + item.name + '</span>' +
+                    '<span class="item-desc">' + item.desc + '</span>' +
+                    '<span class="item-price">$' + parseFloat(item.price).toFixed(2) + '</span>' +
+                    '<button class="remove-btn" onclick="removeFromCart(' + idx + ')">Remove</button>';
+                cartList.appendChild(li);
+            });
+            cartTotal.textContent = 'Total: $' + total.toFixed(2);
+        }
+        updateCartCount();
+        // CSRF helper for AJAX
+        function getCSRFToken() {
+            return document.getElementById('csrfTokenInput').value;
+        }
+        // Modal logic
+        const crudModal = document.getElementById('crudModal');
+        const crudForm = document.getElementById('crudForm');
+        const crudTitle = document.getElementById('crudModalTitle');
+        const crudProductId = document.getElementById('crudProductId');
+        const crudName = document.getElementById('crudName');
+        const crudDesc = document.getElementById('crudDesc');
+        const crudPrice = document.getElementById('crudPrice');
+        const crudError = document.getElementById('crudError');
+        const crudDeleteBtn = document.getElementById('crudDeleteBtn');
+        let crudMode = 'add'; // or 'edit'
+        function openCrudModal(mode, product) {
+            crudMode = mode;
+            crudError.style.display = 'none';
+            if (mode === 'add') {
+                crudTitle.textContent = 'Add Product';
+                crudProductId.value = '';
+                crudName.value = '';
+                crudDesc.value = '';
+                crudPrice.value = '';
+                crudDeleteBtn.style.display = 'none';
+            } else if (mode === 'edit') {
+                crudTitle.textContent = 'Edit Product';
+                crudProductId.value = product.id;
+                crudName.value = product.name;
+                crudDesc.value = product.description;
+                crudPrice.value = product.price;
+                crudDeleteBtn.style.display = 'block';
+            }
+            crudModal.style.display = 'flex';
+        }
+        function closeCrudModal() {
+            crudModal.style.display = 'none';
+        }
+        document.getElementById('addProductBtn').onclick = function() {
+            window.location.href = '/addproduct/';
+        };
+        crudDeleteBtn.onclick = function() {
+            if (confirm('Are you sure you want to delete this product?')) {
+                fetch(`/addproduct/deleteProduct/${crudProductId.value}`, {
+                    method: 'POST',
+                    headers: {'X-CSRFToken': getCSRFToken()},
+                }).then(r => {
+                    if (r.ok) location.reload();
+                    else r.text().then(t => {crudError.textContent = t; crudError.style.display = 'block';});
+                });
+            }
+        };
+        crudForm.onsubmit = function(e) {
+            e.preventDefault();
+            const data = new FormData();
+            data.append('name', crudName.value);
+            data.append('description', crudDesc.value);
+            data.append('price', crudPrice.value);
+            if (crudMode === 'add') {
+                fetch('/addproduct/', {
+                    method: 'POST',
+                    headers: {'X-CSRFToken': getCSRFToken()},
+                    body: data
+                }).then(r => {
+                    if (r.ok) location.reload();
+                    else r.text().then(t => {crudError.textContent = t; crudError.style.display = 'block';});
+                });
+            } else if (crudMode === 'edit') {
+                fetch(`/addproduct/updateProduct/${crudProductId.value}`, {
+                    method: 'POST',
+                    headers: {'X-CSRFToken': getCSRFToken()},
+                    body: data
+                }).then(r => {
+                    if (r.ok) location.reload();
+                    else r.text().then(t => {crudError.textContent = t; crudError.style.display = 'block';});
+                });
+            }
+        };
+        // Remove Edit/Delete buttons from product cards
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.products .card').forEach(function(card) {
+                let btns = card.querySelectorAll('.card-btn');
+                if (btns.length > 1) {
+                    for (let i = 1; i < btns.length; i++) btns[i].remove();
+                }
+            });
+        });
+        // Manage Products Modal logic
+        const manageModal = document.getElementById('manageModal');
+        const manageProductsBtn = document.getElementById('manageProductsBtn');
+        const manageForm = document.getElementById('manageForm');
+        const manageSelect = document.getElementById('manageSelect');
+        const manageName = document.getElementById('manageName');
+        const manageDesc = document.getElementById('manageDesc');
+        const managePrice = document.getElementById('managePrice');
+        const manageError = document.getElementById('manageError');
+        const manageDeleteBtn = document.getElementById('manageDeleteBtn');
+        let selectedProductId = '';
+        manageProductsBtn.onclick = function() {
+            manageModal.style.display = 'flex';
+        };
+        function closeManageModal() {
+            manageModal.style.display = 'none';
+        }
+        manageSelect.onchange = function() {
+            const opt = manageSelect.options[manageSelect.selectedIndex];
+            selectedProductId = opt.value;
+            manageName.value = opt.getAttribute('data-name');
+            manageDesc.value = opt.getAttribute('data-desc');
+            managePrice.value = opt.getAttribute('data-price');
+        };
+        manageForm.onsubmit = function(e) {
+            e.preventDefault();
+            if (!selectedProductId) return;
+            const data = new FormData();
+            data.append('productName', manageName.value);
+            data.append('description', manageDesc.value);
+            data.append('price', managePrice.value);
+            fetch(`/addproduct/updateProduct/${selectedProductId}`, {
+                method: 'POST',
+                headers: {'X-CSRFToken': getCSRFToken()},
+                body: data
+            }).then(r => {
+                if (r.ok) location.reload();
+                else r.text().then(t => {manageError.textContent = t; manageError.style.display = 'block';});
+            });
+        };
+        manageDeleteBtn.onclick = function() {
+            if (!selectedProductId) return;
+            if (confirm('Are you sure you want to delete this product?')) {
+                fetch(`/addproduct/deleteProduct/${selectedProductId}`, {
+                    method: 'POST',
+                    headers: {'X-CSRFToken': getCSRFToken()},
+                }).then(r => {
+                    if (r.ok) location.reload();
+                    else r.text().then(t => {manageError.textContent = t; manageError.style.display = 'block';});
+                });
+            }
+        };
+    </script>
+    <!-- End Product CRUD Modal -->
+</body>
+</html>
