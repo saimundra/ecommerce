@@ -11,10 +11,10 @@ def addproduct(request):
         name = request.POST["name"]
         price = request.POST["price"]
         description = request.POST["description"]
-        newproduct = product(name = name , description= description, price = price)
-        product.adelete
+        image = request.FILES.get("image")
+        newproduct = product(name=name, description=description, price=price, image=image)
         newproduct.save()
-        return render(request, "addproduct.html")
+        return redirect('/')
     else:
         return HttpResponse("invalid credentials")
     
@@ -25,8 +25,10 @@ def updateProduct(request, product_id):
         productTobeUpdated.name = request.POST['productName']
         productTobeUpdated.price = request.POST['price']
         productTobeUpdated.description = request.POST['description']
+        if 'image' in request.FILES:
+            productTobeUpdated.image = request.FILES['image']
         productTobeUpdated.save()
-        return redirect('/addProduct')
+        return HttpResponse('Product updated successfully')
     else:
         return HttpResponse('Invalid Request Method')
 

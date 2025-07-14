@@ -239,6 +239,11 @@
         {% for p in products %}
         <div class="card" data-product-id="{{ p.id }}" data-product-name="{{ p.name|escapejs }}" data-product-desc="{{ p.description|escapejs }}" data-product-price="{{ p.price }}">
             <div class="card-body">
+                {% if p.image and p.image.url %}
+                    <img src="{{ p.image.url }}" alt="{{ p.name }}" style="width:100%;max-height:180px;object-fit:cover;border-radius:8px 8px 0 0; margin-bottom:10px;" />
+                {% else %}
+                    <img src="https://via.placeholder.com/300x180?text=No+Image" alt="No Image" style="width:100%;max-height:180px;object-fit:cover;border-radius:8px 8px 0 0; margin-bottom:10px;" />
+                {% endif %}
                 <div class="card-title">{{ p.name }}</div>
                 <div class="card-desc">{{ p.description }}</div>
                 <div class="card-price">${{ p.price }}</div>
@@ -262,12 +267,14 @@
         <div style="background:#fff; border-radius:12px; max-width:400px; width:95%; margin:auto; box-shadow:0 8px 32px rgba(0,0,0,0.18); padding:32px 24px 24px 24px; position:relative;">
             <button onclick="closeManageModal()" style="position:absolute; top:12px; right:16px; background:none; border:none; font-size:1.5rem; color:#8458B3; cursor:pointer;">&times;</button>
             <h2 style="margin-bottom:18px; color:#8458B3; text-align:center;">Manage Products</h2>
-            <form id="manageForm">
+            <form id="manageForm",action="products.html",method="POST">
                 <label for="manageSelect">Select Product</label>
                 <select id="manageSelect" style="width:100%; margin-bottom:14px;">
                     <option value="" disabled selected>Select a product</option>
                     {% for p in products %}
-                    <option value="{{ p.id }}" data-name="{{ p.name|escapejs }}" data-desc="{{ p.description|escapejs }}" data-price="{{ p.price }}">{{ p.name }}</option>
+                    <option value="{{ p.id }}" data-name="{{ p.name|escapejs }}" data-desc="{{ p.description|escapejs }}" data-price="{{ p.price }}" data-image-url="{% if p.image and p.image.url %}{{ p.image.url }}{% else %}https://via.placeholder.com/150x120?text=No+Image{% endif %}">
+                        {{ p.name }}
+                    </option>
                     {% endfor %}
                 </select>
                 <label for="manageName">Product Name</label>
@@ -276,6 +283,9 @@
                 <textarea id="manageDesc" rows="3" required style="width:100%; margin-bottom:12px;"></textarea>
                 <label for="managePrice">Price ($)</label>
                 <input type="number" id="managePrice" step="0.01" min="0" required style="width:100%; margin-bottom:18px;">
+                <label for="manageImage">Product Image</label>
+                <input type="file" id="manageImage" accept="image/*" style="width:100%; margin-bottom:12px;">
+                <div id="manageImagePreviewContainer" style="text-align:center; margin-bottom:12px;"></div>
                 <div id="manageError" style="color:#c00; margin-bottom:10px; display:none;"></div>
                 <button type="submit" id="manageUpdateBtn" style="width:100%; padding:10px; background:#8458B3; color:#fff; border:none; border-radius:6px; font-size:1.1rem; font-weight:600; cursor:pointer;">Update</button>
                 <button type="button" id="manageDeleteBtn" style="width:100%; padding:10px; background:#c00; color:#fff; border:none; border-radius:6px; font-size:1.1rem; font-weight:600; cursor:pointer; margin-top:10px;">Delete</button>
@@ -470,6 +480,27 @@
             manageName.value = opt.getAttribute('data-name');
             manageDesc.value = opt.getAttribute('data-desc');
             managePrice.value = opt.getAttribute('data-price');
+            // Show current image preview
+            const imgUrl = opt.getAttribute('data-image-url');
+            let previewHtml = '';
+            if (imgUrl) {
+                previewHtml = `<img src="${imgUrl}" alt="Product Image" style="max-width:100%;max-height:120px;border-radius:8px;" />`;
+            } else {
+                previewHtml = `<img src='https://via.placeholder.com/150x120?text=No+Image' alt='No Image' style='max-width:100%;max-height:120px;border-radius:8px;' />`;
+            }
+            document.getElementById('manageImagePreviewContainer').innerHTML = previewHtml;
+            document.getElementById('manageImage').value = '';
+        };
+        // Preview new image before upload
+        document.getElementById('manageImage').onchange = function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    document.getElementById('manageImagePreviewContainer').innerHTML = `<img src='${ev.target.result}' style='max-width:100%;max-height:120px;border-radius:8px;' />`;
+                };
+                reader.readAsDataURL(file);
+            }
         };
         manageForm.onsubmit = function(e) {
             e.preventDefault();
@@ -478,6 +509,10 @@
             data.append('productName', manageName.value);
             data.append('description', manageDesc.value);
             data.append('price', managePrice.value);
+            const imageFile = document.getElementById('manageImage').files[0];
+            if (imageFile) {
+                data.append('image', imageFile);
+            }
             fetch(`/addproduct/updateProduct/${selectedProductId}`, {
                 method: 'POST',
                 headers: {'X-CSRFToken': getCSRFToken()},
